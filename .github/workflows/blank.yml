@@ -1,36 +1,65 @@
-# This is a basic workflow to help you get started with Actions
+import os
+import json
+from datetime import datetime
 
-name: CI
+STORE_NAME = "BOULStudio"
+BUNDLE_TITLE = "400+ MEGA Halloween Gallery Bundle & Fall Print Collection"
+OUTPUT_DIR = "boulstudio_halloween_bundle"
 
-# Controls when the workflow will run
-on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+# تفاصيل المجموعات الخمس الكبرى (توليد جماعي لـ 400 تصميم)
+batches = [
+    {"batch_id": "BATCH_01", "category": "Gothic Library & Tomes", "count": 80, "style": "Antique Etching"},
+    {"batch_id": "BATCH_02", "category": "Cabinet of Curiosities & Specimens", "count": 80, "style": "Moody Dark Academia"},
+    {"batch_id": "BATCH_03", "category": "Halloween Spooky Moths & Skulls", "count": 80, "style": "Vintage Victorian"},
+    {"batch_id": "BATCH_04", "category": "Autumn Nature & Forest Landscapes", "count": 80, "style": "Sepia Ink Print"},
+    {"batch_id": "BATCH_05", "category": "Occult & Witchcraft Astrolabes", "count": 80, "style": "Mystical Line Art"}
+]
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+def generate_batch_files():
+    print(f"[{datetime.now()}] Starting Batch Generation for {STORE_NAME}...")
+    
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+        
+    master_catalog = []
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    for batch in batches:
+        batch_folder = os.path.join(OUTPUT_DIR, batch["batch_id"])
+        if not os.path.exists(batch_folder):
+            os.makedirs(batch_folder)
+            
+        # توليد تفاصيل عناصر الدفعة
+        items = []
+        for i in range(1, batch["count"] + 1):
+            item_name = f"{batch['category']} - Print #{i:03d}"
+            items.append({
+                "item_id": f"{batch['batch_id']}_ITEM_{i:03d}",
+                "title": item_name,
+                "style": batch["style"],
+                "format": "High-Res 300 DPI (JPG/PDF)"
+            })
+            
+        batch_data = {
+            "batch_id": batch["batch_id"],
+            "category": batch["category"],
+            "total_items": batch["count"],
+            "items": items
+        }
+        
+        # حفظ ملف كل دفعة على حدة
+        batch_file_path = os.path.join(batch_folder, "manifest.json")
+        with open(batch_file_path, "w", encoding="utf-8") as f:
+            json.dump(batch_data, f, indent=4, ensure_ascii=False)
+            
+        master_catalog.append(batch_data)
+        print(f"-> Generated {batch['count']} items for {batch['category']}")
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+    # حفظ الكتالوج الشامل
+    master_path = os.path.join(OUTPUT_DIR, "master_bundle_catalog.json")
+    with open(master_path, "w", encoding="utf-8") as f:
+        json.dump(master_catalog, f, indent=4, ensure_ascii=False)
+        
+    print(f"Batch generation completed successfully! Total items: 400+")
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+if __name__ == "__main__":
+    generate_batch_files()
