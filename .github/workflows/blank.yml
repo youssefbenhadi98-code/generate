@@ -1,63 +1,29 @@
-import os
-import json
-from datetime import datetime
+name: Run BOULStudio Generator
 
-STORE_NAME = "BOULStudio"
-BUNDLE_TITLE = "400+ MEGA Halloween Gallery Bundle & Fall Print Collection"
-OUTPUT_DIR = "boulstudio_halloween_bundle"
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-# Batch structure representing the 5 major categories for 400+ items generation
-batches = [
-    {"batch_id": "BATCH_01", "category": "Gothic Library & Tomes", "count": 80, "style": "Antique Etching"},
-    {"batch_id": "BATCH_02", "category": "Cabinet of Curiosities & Specimens", "count": 80, "style": "Moody Dark Academia"},
-    {"batch_id": "BATCH_03", "category": "Halloween Spooky Moths & Skulls", "count": 80, "style": "Vintage Victorian"},
-    {"batch_id": "BATCH_04", "category": "Autumn Nature & Forest Landscapes", "count": 80, "style": "Sepia Ink Print"},
-    {"batch_id": "BATCH_05", "category": "Occult & Witchcraft Astrolabes", "count": 80, "style": "Mystical Line Art"}
-]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-def generate_batch_files():
-    """Generates the structured batch folders and metadata manifests for the digital catalog."""
-    print(f"[{datetime.now()}] Starting Batch Generation for {STORE_NAME}...")
-    
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
-        
-    master_catalog = []
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    for batch in batches:
-        batch_folder = os.path.join(OUTPUT_DIR, batch["batch_id"])
-        if not os.path.exists(batch_folder):
-            os.makedirs(batch_folder)
-            
-        items = []
-        for i in range(1, batch["count"] + 1):
-            item_name = f"{batch['category']} - Print #{i:03d}"
-            items.append({
-                "item_id": f"{batch['batch_id']}_ITEM_{i:03d}",
-                "title": item_name,
-                "style": batch["style"],
-                "format": "High-Res 300 DPI (JPG/PDF)"
-            })
-            
-        batch_data = {
-            "batch_id": batch["batch_id"],
-            "category": batch["category"],
-            "total_items": batch["count"],
-            "items": items
-        }
-        
-        batch_file_path = os.path.join(batch_folder, "manifest.json")
-        with open(batch_file_path, "w", encoding="utf-8") as f:
-            json.dump(batch_data, f, indent=4, ensure_ascii=False)
-            
-        master_catalog.append(batch_data)
-        print(f"-> Generated {batch['count']} items for {batch['category']}")
+      - name: Run script
+        run: python generator.py
 
-    master_path = os.path.join(OUTPUT_DIR, "master_bundle_catalog.json")
-    with open(master_path, "w", encoding="utf-8") as f:
-        json.dump(master_catalog, f, indent=4, ensure_ascii=False)
-        
-    print(f"Batch generation completed successfully! Total items generated: 400+")
-
-if __name__ == "__main__":
-    generate_batch_files()
+      - name: Commit results
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add boulstudio_halloween_bundle/
+          git commit -m "Auto-generated bundle metadata [skip ci]" || exit 0
+          git push
