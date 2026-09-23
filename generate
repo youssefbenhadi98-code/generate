@@ -1,0 +1,44 @@
+import os
+import json
+from datetime import datetime
+
+# Store and Bundle Configuration
+STORE_NAME = "BOULStudio"
+BUNDLE_TITLE = "400+ MEGA Halloween Gallery Bundle & Fall Print Collection"
+OUTPUT_DIR = "boulstudio_halloween_bundle"
+
+# Bundle sections structure containing categories, counts, and artistic styles
+bundle_sections = [
+    {"category": "Gothic Library & Tomes", "count": 80, "style": "Antique Etching"},
+    {"category": "Cabinet of Curiosities & Specimens", "count": 80, "style": "Moody Dark Academia"},
+    {"category": "Halloween Spooky Moths & Skulls", "count": 80, "style": "Vintage Victorian"},
+    {"category": "Autumn Nature & Forest Landscapes", "count": 80, "style": "Sepia Ink Print"},
+    {"category": "Occult & Witchcraft Astrolabes", "count": 80, "style": "Mystical Line Art"}
+]
+
+def generate_bundle_metadata():
+    """Generates the bundle metadata manifest for digital products."""
+    print(f"[{datetime.now()}] Initializing bundle generation for {STORE_NAME}...")
+    
+    # Create local output directory if it doesn't exist
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+        
+    bundle_manifest = {
+        "store": STORE_NAME,
+        "title": BUNDLE_TITLE,
+        "total_items": sum(section["count"] for section in bundle_sections),
+        "created_at": str(datetime.now()),
+        "sections": bundle_sections
+    }
+    
+    # Save the structured JSON manifest file for digital fulfillment platforms
+    manifest_path = os.path.join(OUTPUT_DIR, "bundle_manifest.json")
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(bundle_manifest, f, indent=4, ensure_ascii=False)
+        
+    print(f"Successfully generated manifest containing {bundle_manifest['total_items']} items!")
+    print(f"Manifest file saved at: {manifest_path}")
+
+if __name__ == "__main__":
+    generate_bundle_metadata()
