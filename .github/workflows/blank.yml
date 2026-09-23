@@ -6,7 +6,7 @@ STORE_NAME = "BOULStudio"
 BUNDLE_TITLE = "400+ MEGA Halloween Gallery Bundle & Fall Print Collection"
 OUTPUT_DIR = "boulstudio_halloween_bundle"
 
-# تفاصيل المجموعات الخمس الكبرى (توليد جماعي لـ 400 تصميم)
+# Batch structure representing the 5 major categories for 400+ items generation
 batches = [
     {"batch_id": "BATCH_01", "category": "Gothic Library & Tomes", "count": 80, "style": "Antique Etching"},
     {"batch_id": "BATCH_02", "category": "Cabinet of Curiosities & Specimens", "count": 80, "style": "Moody Dark Academia"},
@@ -16,6 +16,7 @@ batches = [
 ]
 
 def generate_batch_files():
+    """Generates the structured batch folders and metadata manifests for the digital catalog."""
     print(f"[{datetime.now()}] Starting Batch Generation for {STORE_NAME}...")
     
     if not os.path.exists(OUTPUT_DIR):
@@ -28,7 +29,6 @@ def generate_batch_files():
         if not os.path.exists(batch_folder):
             os.makedirs(batch_folder)
             
-        # توليد تفاصيل عناصر الدفعة
         items = []
         for i in range(1, batch["count"] + 1):
             item_name = f"{batch['category']} - Print #{i:03d}"
@@ -46,7 +46,6 @@ def generate_batch_files():
             "items": items
         }
         
-        # حفظ ملف كل دفعة على حدة
         batch_file_path = os.path.join(batch_folder, "manifest.json")
         with open(batch_file_path, "w", encoding="utf-8") as f:
             json.dump(batch_data, f, indent=4, ensure_ascii=False)
@@ -54,12 +53,11 @@ def generate_batch_files():
         master_catalog.append(batch_data)
         print(f"-> Generated {batch['count']} items for {batch['category']}")
 
-    # حفظ الكتالوج الشامل
     master_path = os.path.join(OUTPUT_DIR, "master_bundle_catalog.json")
     with open(master_path, "w", encoding="utf-8") as f:
         json.dump(master_catalog, f, indent=4, ensure_ascii=False)
         
-    print(f"Batch generation completed successfully! Total items: 400+")
+    print(f"Batch generation completed successfully! Total items generated: 400+")
 
 if __name__ == "__main__":
     generate_batch_files()
